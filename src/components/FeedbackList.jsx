@@ -2,16 +2,32 @@ import { motion, AnimatePresence } from "framer-motion";
 import FeedbackItem from "./FeedbackItem";
 import { useRecoilState } from "recoil";
 import { centerState } from "../atom/CenterAtom";
+import { useEffect, useState } from "react";
+import axios from "axios";
+import Spinner from "./shared/Spinner";
 
 function FeedbackList() {
+  const [isLoading, setIsLoading] = useState(true);
   const [feedback, setFeedback] = useRecoilState(centerState);
+  useEffect(() => {
+    fetchFeedback();
+  }, []);
 
-  console.log(feedback);
-  if (!feedback || feedback.length === 0) {
+  // Fetch feedback
+  const fetchFeedback = async () => {
+    const response = await axios.get(`/feedback?_sort=id&_order=desc`);
+    const data = response.data;
+    setFeedback(data);
+    setIsLoading(false);
+  };
+
+  if (!isLoading && (!feedback || feedback.length === 0)) {
     return <p>No feed back Yet</p>;
   }
 
-  return (
+  return isLoading ? (
+    <Spinner />
+  ) : (
     <div className="feedback-list">
       <AnimatePresence>
         {feedback.map((item) => (

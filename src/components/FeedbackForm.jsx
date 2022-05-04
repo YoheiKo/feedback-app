@@ -1,12 +1,13 @@
 import React from "react";
 import { useState, useEffect } from "react";
-import { v4 as uuidv4 } from "uuid";
+// import { v4 as uuidv4 } from "uuid";
 import Card from "./shared/Card";
 import Button from "./shared/Button";
 import RatingSelect from "./RatingSelect";
 import { useRecoilState } from "recoil";
 import { centerState, editState } from "../atom/CenterAtom";
 import FeedbackItem from "./FeedbackItem";
+import axios from "axios";
 
 function FeedbackForm() {
   const [feedback, setFeedback] = useRecoilState(centerState);
@@ -16,9 +17,19 @@ function FeedbackForm() {
   const [btnDisabled, setBtnDisabled] = useState(true);
   const [message, setMessage] = useState("");
 
-  const addFeedback = (newFeedback) => {
-    newFeedback.id = uuidv4();
-    setFeedback([newFeedback, ...feedback]);
+  const addFeedback = async (newFeedback) => {
+    const response = await axios.post(
+      "/feedback",
+      JSON.stringify(newFeedback),
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const data = response.data;
+    // newFeedback.id = uuidv4(); //json server creates the id automatically
+    setFeedback([data, ...feedback]);
   };
 
   useEffect(() => {
@@ -60,9 +71,19 @@ function FeedbackForm() {
     }
   };
 
-  const updateFeedback = (id, updItem) => {
+  const updateFeedback = async (id, updItem) => {
+    const response = await axios.put(
+      `/feedback/${id}`,
+      JSON.stringify(updItem),
+      {
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const data = response.data;
     setFeedback(
-      feedback.map((item) => (item.id === id ? { ...item, ...updItem } : item))
+      feedback.map((item) => (item.id === id ? { ...item, ...data } : item))
     );
   };
 
